@@ -1,0 +1,43 @@
+{
+  "page": {
+    "title": "Cool JSON Page",
+    "style": {
+      "backgroundColor": "#121212",
+      "color": "#f0f0f0",
+      "fontFamily": "Segoe UI, Tahoma, Geneva, Verdana, sans-serif"
+    },
+    "content": {
+      "header": {
+        "type": "h1",
+        "text": "Welcome to My Cool Page",
+        "style": {
+          "color": "#00ffd0",
+          "textShadow": "0 0 10px #00ffd0"
+        }
+      },
+      "paragraph": {
+        "type": "p",
+        "text": "This is a stylish dark-mode page using JSON structure.",
+        "style": {
+          "color": "#ccc",
+          "fontSize": "1.2rem"
+        }
+      },
+      "button": {
+        "type": "button",
+        "text": "Click Me!",
+        "style": {
+          "padding": "12px 24px",
+          "fontSize": "1rem",
+          "backgroundColor": "#00ffd0",
+          "color": "#000",
+          "borderRadius": "8px"
+        },
+        "hover": {
+          "transform": "scale(1.05)",
+          "backgroundColor": "#00e0c0"
+        }
+      }
+    }
+  }
+}
