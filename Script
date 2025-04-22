@@ -1,0 +1,306 @@
+--[[
+    Een draggeable, doorzichtige zwart-grijze GUI met uitgebreide functionaliteiten.
+
+    Let op: Dit script is een concept en vereist mogelijk aanpassingen
+    afhankelijk van de specifieke game-engine of LUA-omgeving.
+--]]
+
+-- Globale variabelen (mogelijk aanpassen aan de omgeving)
+local player = game.Players.LocalPlayer -- Voorbeeld voor Roblox
+local UserInputService = game:GetService("UserInputService") -- Voorbeeld voor Roblox
+local TweenService = game:GetService("TweenService") -- Voorbeeld voor Roblox
+
+-- GUI elementen
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "CustomGUI"
+screenGui.Parent = player.PlayerGui
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Parent = screenGui
+mainFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+mainFrame.BackgroundTransparency = 0.7
+mainFrame.BorderSizePixel = 0
+mainFrame.Position = UDim2.new(0.1, 0, 0.1, 0)
+mainFrame.Size = UDim2.new(0, 250, 0, 300) -- Groter frame
+mainFrame.Draggable = true
+
+local titleBar = Instance.new("Frame")
+titleBar.Name = "TitleBar"
+titleBar.Parent = mainFrame
+titleBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+titleBar.BorderSizePixel = 0
+titleBar.Size = UDim2.new(1, 0, 0, 20)
+titleBar.Draggable = true
+
+local titleText = Instance.new("TextLabel")
+titleText.Parent = titleBar
+titleText.BackgroundColor3 = Color3.new()
+titleText.BackgroundTransparency = 1
+titleText.BorderSizePixel = 0
+titleText.TextColor3 = Color3.fromRGB(200, 200, 200)
+titleText.Text = "Uitgebreid Menu"
+titleText.Font = Enum.Font.SourceSansBold
+titleText.TextSize = 12
+titleText.Position = UDim2.new(0, 5, 0, 2)
+titleText.Size = UDim2.new(1, -10, 1, -4)
+titleText.AnchorPoint = Vector2.new(0, 0)
+
+-- Layout parameters
+local buttonWidthScale = 0.45
+local buttonHeightScale = 0.15
+local buttonSpacingScale = 0.05
+local verticalOffsetScale = 0.2
+
+-- 1. Fly functionaliteit (zoals eerder)
+local flyButton = Instance.new("TextButton")
+flyButton.Name = "FlyButton"
+flyButton.Parent = mainFrame
+flyButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+flyButton.BorderSizePixel = 0
+flyButton.Position = UDim2.new(buttonSpacingScale, 0, verticalOffsetScale, 0)
+flyButton.Size = UDim2.new(buttonWidthScale, 0, buttonHeightScale, 0)
+flyButton.Text = "Fly"
+flyButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+flyButton.Font = Enum.Font.SourceSans
+flyButton.TextSize = 14
+
+local isFlying = false
+
+flyButton.MouseButton1Click:Connect(function()
+    isFlying = not isFlying
+    if isFlying then
+        flyButton.Text = "Unfly"
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            player.Character.Humanoid.WalkSpeed = 50
+            player.Character.Humanoid.JumpPower = 0
+        end
+    else
+        flyButton.Text = "Fly"
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            player.Character.Humanoid.WalkSpeed = 16
+            player.Character.Humanoid.JumpPower = 50
+        end
+    end
+end)
+
+-- 2. Walk Speed Control
+local speedLabel = Instance.new("TextLabel")
+speedLabel.Parent = mainFrame
+speedLabel.BackgroundColor3 = Color3.new()
+speedLabel.BackgroundTransparency = 1
+speedLabel.BorderSizePixel = 0
+speedLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+speedLabel.Text = "Snelheid:"
+speedLabel.Font = Enum.Font.SourceSans
+speedLabel.TextSize = 12
+speedLabel.Position = UDim2.new(buttonSpacingScale, 0, verticalOffsetScale + buttonHeightScale + buttonSpacingScale, 0)
+speedLabel.Size = UDim2.new(buttonWidthScale, 0, buttonHeightScale / 2, 0)
+speedLabel.AnchorPoint = Vector2.new(0, 0)
+speedLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local speedTextBox = Instance.new("TextBox")
+speedTextBox.Name = "SpeedTextBox"
+speedTextBox.Parent = mainFrame
+speedTextBox.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+speedTextBox.BorderSizePixel = 1
+speedTextBox.BorderColor3 = Color3.fromRGB(120, 120, 120)
+speedTextBox.TextColor3 = Color3.fromRGB(220, 220, 220)
+speedTextBox.Font = Enum.Font.SourceSans
+speedTextBox.TextSize = 14
+speedTextBox.PlaceholderText = "Waarde"
+speedTextBox.Position = UDim2.new(buttonSpacingScale, 0, verticalOffsetScale + buttonHeightScale + buttonSpacingScale + buttonHeightScale / 2, 0)
+speedTextBox.Size = UDim2.new(buttonWidthScale, 0, buttonHeightScale / 2, 0)
+
+speedTextBox.FocusLost:Connect(function()
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        local speed = tonumber(speedTextBox.Text)
+        if speed then
+            player.Character.Humanoid.WalkSpeed = speed
+        else
+            warn("Ongeldige snelheid ingevoerd.")
+            speedTextBox.Text = tostring(player.Character.Humanoid.WalkSpeed) -- Reset text naar huidige snelheid
+        end
+    end
+end)
+
+-- 3. Jump Power Control
+local jumpLabel = Instance.new("TextLabel")
+jumpLabel.Parent = mainFrame
+jumpLabel.BackgroundColor3 = Color3.new()
+jumpLabel.BackgroundTransparency = 1
+jumpLabel.BorderSizePixel = 0
+jumpLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+jumpLabel.Text = "Sprongkracht:"
+jumpLabel.Font = Enum.Font.SourceSans
+jumpLabel.TextSize = 12
+jumpLabel.Position = UDim2.new(1 - buttonSpacingScale - buttonWidthScale, 0, verticalOffsetScale + buttonHeightScale + buttonSpacingScale, 0)
+jumpLabel.Size = UDim2.new(buttonWidthScale, 0, buttonHeightScale / 2, 0)
+jumpLabel.AnchorPoint = Vector2.new(0, 0)
+jumpLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local jumpTextBox = Instance.new("TextBox")
+jumpTextBox.Name = "JumpTextBox"
+jumpTextBox.Parent = mainFrame
+jumpTextBox.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+jumpTextBox.BorderSizePixel = 1
+jumpTextBox.BorderColor3 = Color3.fromRGB(120, 120, 120)
+jumpTextBox.TextColor3 = Color3.fromRGB(220, 220, 220)
+jumpTextBox.Font = Enum.Font.SourceSans
+jumpTextBox.TextSize = 14
+jumpTextBox.PlaceholderText = "Waarde"
+jumpTextBox.Position = UDim2.new(1 - buttonSpacingScale - buttonWidthScale, 0, verticalOffsetScale + buttonHeightScale + buttonSpacingScale + buttonHeightScale / 2, 0)
+jumpTextBox.Size = UDim2.new(buttonWidthScale, 0, buttonHeightScale / 2, 0)
+
+jumpTextBox.FocusLost:Connect(function()
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        local jumpPower = tonumber(jumpTextBox.Text)
+        if jumpPower then
+            player.Character.Humanoid.JumpPower = jumpPower
+        else
+            warn("Ongeldige sprongkracht ingevoerd.")
+            jumpTextBox.Text = tostring(player.Character.Humanoid.JumpPower) -- Reset text
+        end
+    end
+end)
+
+-- 4. Teleportatie naar speler (zoals eerder)
+local teleportLabel = Instance.new("TextLabel")
+teleportLabel.Parent = mainFrame
+teleportLabel.BackgroundColor3 = Color3.new()
+teleportLabel.BackgroundTransparency = 1
+teleportLabel.BorderSizePixel = 0
+teleportLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+teleportLabel.Text = "Teleport naar:"
+teleportLabel.Font = Enum.Font.SourceSans
+teleportLabel.TextSize = 12
+teleportLabel.Position = UDim2.new(buttonSpacingScale, 0, verticalOffsetScale + 2 * (buttonHeightScale + buttonSpacingScale), 0)
+teleportLabel.Size = UDim2.new(1 - 2 * buttonSpacingScale, 0, buttonHeightScale / 2, 0)
+teleportLabel.AnchorPoint = Vector2.new(0, 0)
+teleportLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local targetTextBox = Instance.new("TextBox")
+targetTextBox.Name = "TargetTextBox"
+targetTextBox.Parent = mainFrame
+targetTextBox.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+targetTextBox.BorderSizePixel = 1
+targetTextBox.BorderColor3 = Color3.fromRGB(120, 120, 120)
+targetTextBox.TextColor3 = Color3.fromRGB(220, 220, 220)
+targetTextBox.Font = Enum.Font.SourceSans
+targetTextBox.TextSize = 14
+targetTextBox.PlaceholderText = "Spelernaam"
+targetTextBox.Position = UDim2.new(buttonSpacingScale, 0, verticalOffsetScale + 2 * (buttonHeightScale + buttonSpacingScale) + buttonHeightScale / 2, 0)
+targetTextBox.Size = UDim2.new(0.6, 0, buttonHeightScale / 2, 0)
+
+local teleportButton = Instance.new("TextButton")
+teleportButton.Name = "TeleportButton"
+teleportButton.Parent = mainFrame
+teleportButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+teleportButton.BorderSizePixel = 0
+teleportButton.Position = UDim2.new(buttonSpacingScale + 0.6 + buttonSpacingScale, 0, verticalOffsetScale + 2 * (buttonHeightScale + buttonSpacingScale) + buttonHeightScale / 2, 0)
+teleportButton.Size = UDim2.new(0.4 - 2 * buttonSpacingScale, 0, buttonHeightScale / 2, 0)
+teleportButton.Text = "Teleport"
+teleportButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+teleportButton.Font = Enum.Font.SourceSans
+teleportButton.TextSize = 14
+
+teleportButton.MouseButton1Click:Connect(function()
+    local targetName = targetTextBox.Text
+    if targetName ~= "" then
+        local targetPlayer = game.Players:FindFirstChild(targetName)
+        if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local targetPosition = targetPlayer.Character.HumanoidRootPart.Position
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                player.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition + Vector3.new(0, 2, 0))
+            end
+        else
+            warn("Speler '" .. targetName .. "' niet gevonden!")
+        end
+    else
+        warn("Voer een spelernaam in om naar te teleporteren.")
+    end
+end)
+
+-- 5. God Mode (toggle on/off)
+local godModeButton = Instance.new("TextButton")
+godModeButton.Name = "GodModeButton"
+godModeButton.Parent = mainFrame
+godModeButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+godModeButton.BorderSizePixel = 0
+godModeButton.Position = UDim2.new(1 - buttonSpacingScale - buttonWidthScale, 0, verticalOffsetScale, 0)
+godModeButton.Size = UDim2.new(buttonWidthScale, 0, buttonHeightScale, 0)
+godModeButton.Text = "God Mode: Off"
+godModeButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+godModeButton.Font = Enum.Font.SourceSans
+godModeButton.TextSize = 14
+
+local isGodMode = false
+
+godModeButton.MouseButton1Click:Connect(function()
+    isGodMode = not isGodMode
+    if isGodMode then
+        godModeButton.Text = "God Mode: On"
+        -- Implementeer hier de code om god mode in te schakelen
+        -- Dit kan inhouden dat je de health van de speler constant hoog houdt
+        -- of dat je schade voorkomt. De implementatie is game-specifiek.
+        print("God Mode geactiveerd (implementatie afhankelijk van de game).")
+    else
+        godModeButton.Text = "God Mode: Off"
+        -- Implementeer hier de code om god mode uit te schakelen
+        print("God Mode gedeactiveerd (implementatie afhankelijk van de game).")
+    end
+end)
+
+-- 6. No Clip (toggle on/off)
+local noClipButton = Instance.new("TextButton")
+noClipButton.Name = "NoClipButton"
+noClipButton.Parent = mainFrame
+noClipButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+noClipButton.BorderSizePixel = 0
+noClipButton.Position = UDim2.new(buttonSpacingScale, 0, verticalOffsetScale + 3 * (buttonHeightScale + buttonSpacingScale), 0)
+noClipButton.Size = UDim2.new(buttonWidthScale, 0, buttonHeightScale, 0)
+noClipButton.Text = "No Clip: Off"
+noClipButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+noClipButton.Font = Enum.Font.SourceSans
+noClipButton.TextSize = 14
+
+local isNoClip = false
+
+noClipButton.MouseButton1Click:Connect(function()
+    isNoClip = not isNoClip
+    if isNoClip then
+        noClipButton.Text = "No Clip: On"
+        -- Implementeer hier de code om no clip in te schakelen
+        -- Dit kan inhouden dat je de Collision van de speler uitschakelt.
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            player.Character.HumanoidRootPart.CanCollide = false
+        end
+        print("No Clip geactiveerd.")
+    else
+        noClipButton.Text = "No Clip: Off"
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            player.Character.HumanoidRootPart.CanCollide = true
+        end
+        print("No Clip gedeactiveerd.")
+    end
+end)
+
+-- 7. Teleport to Position (via input velden)
+local tpPosLabel = Instance.new("TextLabel")
+tpPosLabel.Parent = mainFrame
+tpPosLabel.BackgroundColor3 = Color3.new()
+tpPosLabel.BackgroundTransparency = 1
+tpPosLabel.BorderSizePixel = 0
+tpPosLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+tpPosLabel.Text = "Teleport Coördinaten:"
+tpPosLabel.Font = Enum.Font.SourceSans
+tpPosLabel.TextSize = 12
+tpPosLabel.Position = UDim2.new(1 - buttonSpacingScale - buttonWidthScale, 0, verticalOffsetScale + 3 * (buttonHeightScale + buttonSpacingScale), 0)
+tpPosLabel.Size = UDim2.new(buttonWidthScale, 0, buttonHeightScale / 2, 0)
+tpPosLabel.AnchorPoint = Vector2.new(0, 0)
+tpPosLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local xTextBox = Instance.new("TextBox")
+xTextBox.Name = "XTextBox"
+xTextBox.Parent = mainFrame
